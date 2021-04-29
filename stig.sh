@@ -243,6 +243,328 @@ function V71951 () {
 }
 
 
+#Set audit of privileged functions, V-72095
+function V72095 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+arch=b32\s+-S\s+execve\s+-C\s+uid!=euid\s+-F\s+euid=0\s+-k\s+setuid\s*(#.*)?$"
+    local Regex2="^\s*-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+execve\s+-C\s+uid!=euid\s+-F\s+euid=0\s+-k\s+setuid\s*(#.*)?$"
+    local Regex3="^\s*-a\s+always,exit\s+-F\s+arch=b32\s+-S\s+execve\s+-C\s+gid!=egid\s+-F\s+egid=0\s+-k\s+setgid\s*(#.*)?$"
+    local Regex4="^\s*-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+execve\s+-C\s+gid!=egid\s+-F\s+egid=0\s+-k\s+setgid\s*(#.*)?$"
+    local Success32="Auditing of privileged functions is enabled on 32bit systems, per V-72095."
+    local Success64="Auditing of privileged functions is enabled on 64bit systems, per V-72095."
+    local Failure32="Failed to set auditing of privileged functions on 32bit systems, not in compliance with V-72095."
+    local Failure64="Failed to set auditing of privileged functions on 64bit systems, not in compliance with V-72095."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F arch=b32 -S execve -C uid!=euid -F euid=0 -k setuid" >> /etc/audit/rules.d/audit.rules
+    (uname -p | grep -q 'x86_64' && grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules) || echo "-a always,exit -F arch=b64 -S execve -C uid!=euid -F euid=0 -k setuid" >> /etc/audit/rules.d/audit.rules
+    grep -E -q "$Regex3" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F arch=b32 -S execve -C gid!=egid -F egid=0 -k setgid" >> /etc/audit/rules.d/audit.rules
+    (uname -p | grep -q 'x86_64' && grep -E -q "$Regex4" /etc/audit/rules.d/audit.rules) || echo "-a always,exit -F arch=b64 -S execve -C gid!=egid -F egid=0 -k setgid" >> /etc/audit/rules.d/audit.rules
+    ( (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && grep -E -q "$Regex3" /etc/audit/rules.d/audit.rules) && echo "$Success32") || { echo "$Failure32" ; exit 1; }
+    echo
+    uname -p | grep -q 'x86_64' && ( ( (grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules && grep -E -q "$Regex4" /etc/audit/rules.d/audit.rules) && echo "$Success64") || { echo "$Failure64" ; exit 1; } )
+}
+
+
+
+#Set audit to audit of successful/unsuccessful attempts to use open_by_handle_at, V-72129
+function V72129 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+arch=b32\s+-S\s+open_by_handle_at\s+-F\s+exit=-EPERM\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+access\s*(#.*)?$"
+    local Regex2="^\s*-a\s+always,exit\s+-F\s+arch=b32\s+-S\s+open_by_handle_at\s+-F\s+exit=-EACCES\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+access\s*(#.*)?$"
+    local Regex3="^\s*-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+open_by_handle_at\s+-F\s+exit=-EPERM\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+access\s*(#.*)?$"
+    local Regex4="^\s*-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+open_by_handle_at\s+-F\s+exit=-EACCES\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+access\s*(#.*)?$"
+    local Success32="Auditing of successful/unsuccessful attempts to use open_by_handle_at is enabled on 32bit systems, per V-72129."
+    local Success64="Auditing of successful/unsuccessful attempts to use open_by_handle_at is enabled on 64bit systems, per V-72129."
+    local Failure32="Failed to set auditing of successful/unsuccessful attempts to use open_by_handle_at on 32bit systems, not in compliance with V-72129."
+    local Failure64="Failed to set auditing of successful/unsuccessful attempts to use open_by_handle_at on 64bit systems, not in compliance with V-72129."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F arch=b32 -S open_by_handle_at -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access" >> /etc/audit/rules.d/audit.rules
+    grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F arch=b32 -S open_by_handle_at -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access" >> /etc/audit/rules.d/audit.rules
+    (uname -p | grep -q 'x86_64' && grep -E -q "$Regex3" /etc/audit/rules.d/audit.rules) || echo "-a always,exit -F arch=b64 -S open_by_handle_at -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access" >> /etc/audit/rules.d/audit.rules
+    (uname -p | grep -q 'x86_64' && grep -E -q "$Regex4" /etc/audit/rules.d/audit.rules) || echo "-a always,exit -F arch=b64 -S open_by_handle_at -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access" >> /etc/audit/rules.d/audit.rules
+    ( (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules) && echo "$Success32") || { echo "$Failure32" ; exit 1; }
+    echo
+    uname -p | grep -q 'x86_64' && ( ( (grep -E -q "$Regex3" /etc/audit/rules.d/audit.rules && grep -E -q "$Regex4" /etc/audit/rules.d/audit.rules) && echo "$Success64") || { echo "$Failure64" ; exit 1; } )
+}
+
+
+#Set audit to audit of successful/unsuccessful attempts to use semanage, V-72135
+function V72135 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/sbin/semanage\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-priv_change\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use semanage is enabled, per V-72135."
+    local Failure="Failed to set auditing of successful/unsuccessful attempts to use semanage, not in compliance with V-72135."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/sbin/semanage -F auid>=1000 -F auid!=4294967295 -k privileged-priv_change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use setsebool, V-72137
+function V72137 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/sbin/setsebool\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-priv_change\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use setsebool is enabled, per V-72137."
+    local Failure="Failed to set auditing of successful/unsuccessful attempts to use setsebool, not in compliance with V-72137."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/sbin/setsebool -F auid>=1000 -F auid!=4294967295 -k privileged-priv_change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use chcon, V-72139
+function V72139 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/chcon\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-priv_change\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use chcon is enabled, per V-72139."
+    local Failure="Failed to set auditing of successful/unsuccessful attempts to use chcon, not in compliance with V-72139."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/chcon -F auid>=1000 -F auid!=4294967295 -k privileged-priv_change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use setfiles, V-72141
+function V72141 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/sbin/setfiles\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-priv_change\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use setfiles is enabled, per V-72141."
+    local Failure="Failed to set auditing of successful/unsuccessful attempts to use setfiles, not in compliance with V-72141."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/sbin/setfiles -F auid>=1000 -F auid!=4294967295 -k privileged-priv_change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit when unsuccessful account access events occur, V-72145
+function V72145 () {
+    local Regex1="^\s*-w\s+/var/run/faillock\s+-p\s+wa\s+-k\s+logins\s*(#.*)?$"
+    local Success="Auditing of unsuccessful account access events occur is enabled, per V-72145."
+    local Failure="Failed to set auditing of when unsuccessful account access events occur, not in compliance with V-72145."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-w /var/run/faillock -p wa -k logins" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use passwd, V-72149
+function V72149 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/passwd\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-passwd\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use passwd is enabled, per V-72149."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use passwd occur, not in compliance with V-72149."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/passwd -F auid>=1000 -F auid!=4294967295 -k privileged-passwd" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use unix_chkpwd, V-72151
+function V72151 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/sbin/unix_chkpwd\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-passwd\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use unix_chkpwd is enabled, per V-72151."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use unix_chkpwd occur, not in compliance with V-72151."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/sbin/unix_chkpwd -F auid>=1000 -F auid!=4294967295 -k privileged-passwd" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use gpasswd, V-72153
+function V72153 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/gpasswd\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-passwd\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use gpasswd is enabled, per V-72153."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use gpasswd occur, not in compliance with V-72153."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/gpasswd -F auid>=1000 -F auid!=4294967295 -k privileged-passwd" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use chage, V-72155
+function V72155 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/chage\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-passwd\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use chage is enabled, per V-72155."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use chage occur, not in compliance with V-72155."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/chage -F auid>=1000 -F auid!=4294967295 -k privileged-passwd" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use userhelper, V-72157
+function V72157 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/sbin/userhelper\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-passwd\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use userhelper, per V-72157."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use userhelper occur, not in compliance with V-72157."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/sbin/userhelper -F auid>=1000 -F auid!=4294967295 -k privileged-passwd" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use su, V-72159
+function V72159 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/su\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-passwd\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use su, per V-72159."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use su occur, not in compliance with V-72159."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/su -F auid>=1000 -F auid!=4294967295 -k privileged-passwd" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use sudo, V-72161
+function V72161 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/sudo\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-passwd\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use sudo, per V-72161."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use sudo occur, not in compliance with V-72161."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/sudo -F auid>=1000 -F auid!=4294967295 -k privileged-passwd" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful access attempts to /etc/sudoers and /etc/sudoers.d, V-72163
+function V72163 () {
+    local Regex1="^\s*-w\s+/etc/sudoers\s+-p\s+wa\s+-k\s+privileged-actions\s*(#.*)?$"
+    local Regex2="^\s*-w\s+/etc/sudoers.d/\s+-p\s+wa\s+-k\s+privileged-actions\s*(#.*)?$"
+    local Success="Auditing of the successful/unsuccessful access attempts to /etc/sudoers and /etc/sudoers.d, per V-72163."
+    local Failure="Failed to set the auditing of successful/unsuccessful attempts to access /etc/sudoers and /etc/sudoers.d, not in compliance with V-72163."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-w /etc/sudoers -p wa -k privileged-actions" >> /etc/audit/rules.d/audit.rules
+    grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules || echo "-w /etc/sudoers.d/ -p wa -k privileged-actions" >> /etc/audit/rules.d/audit.rules
+    ( (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules) && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use newgrp, V-72165
+function V72165 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/newgrp\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-priv_change\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use newgrp, per V-72165."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use newgrp occur, not in compliance with V-72165."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/newgrp -F auid>=1000 -F auid!=4294967295 -k privileged-priv_change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use chsh, V-72167
+function V72167 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/chsh\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-priv_change\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use chsh, per V-72167."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use chsh occur, not in compliance with V-72167."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/chsh -F auid>=1000 -F auid!=4294967295 -k privileged-priv_change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+
+
+#Set audit to audit of successful/unsuccessful attempts to use umount, V-72173
+function V72173 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/umount\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-mount\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use umount, per V-72173."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use umount occur, not in compliance with V-72173."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/umount -F auid>=1000 -F auid!=4294967295 -k privileged-mount" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use postdrop, V-72175
+function V72175 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/sbin/postdrop\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-postfix\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use postdrop, per V-72175."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use postdrop occur, not in compliance with V-72175."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/sbin/postdrop -F auid>=1000 -F auid!=4294967295 -k privileged-postfix" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use postqueue, V-72177
+function V72177 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/sbin/postqueue\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-postfix\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use postqueue, per V-72177."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use postqueue occur, not in compliance with V-72177."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/sbin/postqueue -F auid>=1000 -F auid!=4294967295 -k privileged-postfix" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+
+#Set audit to audit of successful/unsuccessful attempts to use crontab, V-72183
+function V72183 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/bin/crontab\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-cron\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use crontab, per V-72183."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use crontab occur, not in compliance with V-72183."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/bin/crontab -F auid>=1000 -F auid!=4294967295 -k privileged-cron" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use pam_timestamp_check, V-72185
+function V72185 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+path=/usr/sbin/pam_timestamp_check\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+privileged-pam\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use pam_timestamp_check, per V-72185."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use pam_timestamp_check occur, not in compliance with V-72185."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F path=/usr/sbin/pam_timestamp_check -F auid>=1000 -F auid!=4294967295 -k privileged-pam" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+
+#Set audit to audit of successful/unsuccessful attempts to use kmod, V-72191
+function V72191 () {
+    local Regex1="^\s*-w\s+/usr/bin/kmod\s+-p\s+x\s+-F\s+auid!=4294967295\s+-k\s+module-change\s*(#.*)?$"
+    local Success="Auditing of successful/unsuccessful attempts to use kmod, per V-72191."
+    local Failure="Failed to set auditing of when successful/unsuccessful attempts to use kmod occur , not in compliance V-72191."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-w /usr/bin/kmod -p x -F auid!=4294967295 -k module-change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+
+
+#Set audit to audit of successful/unsuccessful attempts to use rmdir, V-72203
+function V72203 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+arch=b32\s+-S\s+rmdir\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+delete\s*(#.*)?$"
+    local Regex2="^\s*-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+rmdir\s+-F\s+auid>=1000\s+-F\s+auid!=4294967295\s+-k\s+delete\s*(#.*)?$"
+    local Success32="Auditing of the successful/unsuccessful access attempts to use rmdir on 32bit systems, per V-72203."
+    local Success64="Auditing of the successful/unsuccessful access attempts to use rmdir on 64bit systems, per V-72203."
+    local Failure32="Failed to set the auditing of successful/unsuccessful attempts to use rmdir on 32bit systems, not in compliance V-72203."
+    local Failure64="Failed to set the auditing of successful/unsuccessful attempts to use rmdir on 64bit systems, not in compliance V-72203."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F arch=b32 -S rmdir -F auid>=1000 -F auid!=4294967295 -k delete" >> /etc/audit/rules.d/audit.rules
+    (uname -p | grep -q 'x86_64' && grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules) || echo "-a always,exit -F arch=b64 -S rmdir -F auid>=1000 -F auid!=4294967295 -k delete" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success32") || { echo "$Failure32" ; exit 1; }
+    echo
+    uname -p | grep -q 'x86_64' && ( (grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules && echo "$Success64") || { echo "$Failure64" ; exit 1; } )
+}
+
+
+#Set timeout to 600sec, V-72223
+function V72223 () {
+    local Success="Set terminal timeout period to 600secs, per V-72223."
+    local Failure="Failed to set terminal timeout period to 600secs, not in compliance V-72223."
+
+    echo
+    if [ -f "/etc/profile.d/tmout.sh" ]
+    then
+        grep -E -q "^\s*TMOUT=600\s*(#.*)?$" /etc/profile.d/tmout.sh || echo "TMOUT=600" >> /etc/profile.d/tmout.sh
+        grep -E -q "^\s*readonly\s*TMOUT\s*(#.*)?$" /etc/profile.d/tmout.sh || echo "readonly TMOUT" >> /etc/profile.d/tmout.sh
+        grep -E -q "^\s*export\s*TMOUT\s*(#.*)?$" /etc/profile.d/tmout.sh || echo "export TMOUT" >> /etc/profile.d/tmout.sh
+    else
+        echo -e "#!/bin/bash\n\nTMOUT=600\nreadonly TMOUT\nexport TMOUT" >> /etc/profile.d/tmout.sh
+    fi
+    ( (grep -E -q "^\s*TMOUT=600?\s*$" /etc/profile.d/tmout.sh && grep -E -q "^\s*readonly\s*TMOUT?\s*$" /etc/profile.d/tmout.sh && grep -E -q "^\s*export\s*TMOUT\s*$" /etc/profile.d/tmout.sh) && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+
+
+
 
 
 #Apply all CATIIs
