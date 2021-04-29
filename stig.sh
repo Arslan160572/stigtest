@@ -254,18 +254,18 @@ function V71925 () {
 #}'
 
 #Limit password reuse to 5, V-71933
-#function V71933 () {
-#    local Regex1="^\s*password\s*\s*\s*\s*requisite\s*\s*\s*\s*\s*pam_pwhistory.so\s*use_authtok\s*remember=\S+(\s*#.*)?(\s+.*)$"
-#    local Regex2="s/^(\s*)password\s*\s*\s*\s*requisite\s*\s*\s*\s*\s*pam_pwhistory.so\s*use_authtok\s*remember=\S+(\s*#.*)\s*retry=\S+(\s*#.*)?\s*S/\password\s*\s*\s*\s*requisite\s*\s*\s*\s*\s*tpam_pwhistory.so\s*use_authtok\s*remember=5\s*retry=3\2/"
-#    local Regex3="^(\s*)password\s*\s*\s*\s*requisite\s*\s*\s*\s*\s*pam_pwhistory.so\s*use_authtok\s*remember=5\s*retry=3\s*$"
-#    local Success="System is set to keep password history of the last 5 passwords, per V-71933."
-#    local Failure="Failed to set system to keep password history of the last 5 passwords, not in compliance with V-71933."
+function V71933 () {
+    local Regex1="^\s*password\s*\s*\s*\s*requisite\s*\s*\s*\s*\s*pam_pwhistory.so\s*use_authtok\s*remember=\S+(\s*#.*)?(\s+.*)$"
+    local Regex2="s/^(\s*)password\s*\s*\s*\s*requisite\s*\s*\s*\s*\s*pam_pwhistory.so\s*use_authtok\s*remember=\S+(\s*#.*)\s*retry=\S+(\s*#.*)?\s*S/\password\s*\s*\s*\s*requisite\s*\s*\s*\s*\s*tpam_pwhistory.so\s*use_authtok\s*remember=5\s*retry=3\2/"
+    local Regex3="^(\s*)password\s*\s*\s*\s*requisite\s*\s*\s*\s*\s*pam_pwhistory.so\s*use_authtok\s*remember=5\s*retry=3\s*$"
+    local Success="System is set to keep password history of the last 5 passwords, per V-71933."
+    local Failure="Failed to set system to keep password history of the last 5 passwords, not in compliance with V-71933."
 
-#    echo
-#    (grep -E -q "$Regex1" /etc/pam.d/system-auth && sed -ri  "$Regex2" /etc/pam.d/system-auth) || echo "password    requisite     pam_pwhistory.so use_authtok remember=5 retry=3" >> /etc/pam.d/system-auth
-#    (grep -E -q "$Regex1" /etc/pam.d/password-auth && sed -ri  "$Regex2" /etc/pam.d/password-auth) || echo "password    requisite     pam_pwhistory.so use_authtok remember=5 retry=3" >> /etc/pam.d/password-auth
-#    ( (grep -E -q "$Regex3" /etc/pam.d/password-auth && grep -E -q "$Regex3" /etc/pam.d/system-auth) && echo "$Success") || { echo "$Failure" ; exit 1; }
-#}
+    echo
+    (grep -E -q "$Regex1" /etc/pam.d/system-auth && sed -ri  "$Regex2" /etc/pam.d/system-auth) || echo "password    requisite     pam_pwhistory.so use_authtok remember=5 retry=3" >> /etc/pam.d/system-auth
+    (grep -E -q "$Regex1" /etc/pam.d/password-auth && sed -ri  "$Regex2" /etc/pam.d/password-auth) || echo "password    requisite     pam_pwhistory.so use_authtok remember=5 retry=3" >> /etc/pam.d/password-auth
+    ( (grep -E -q "$Regex3" /etc/pam.d/password-auth && grep -E -q "$Regex3" /etc/pam.d/system-auth) && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
 
 #Set min 15 character password length, V-71935
 function V71935 () {
