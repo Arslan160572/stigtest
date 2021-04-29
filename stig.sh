@@ -564,6 +564,115 @@ function V72223 () {
 
 
 
+#Set to provide feedback on last account access, V-72245
+function V72245 () {
+    local Regex1="^(\s*)#PrintLastLog\s+\S+(\s*#.*)?\s*$"
+    local Regex2="s/^(\s*)#PrintLastLog\s+\S+(\s*#.*)?\s*$/\PrintLastLog yes\2/"
+    local Regex3="^(\s*)PrintLastLog\s+\S+(\s*#.*)?\s*$"
+    local Regex4="s/^(\s*)PrintLastLog\s+\S+(\s*#.*)?\s*$/\PrintLastLog yes\2/"
+    local Regex5="^(\s*)PrintLastLog\s*yes?\s*$"
+    local Success="Set SSH to inform users of when the last time their account connected, per V-72245."
+    local Failure="Failed to set SSH to inform users of when the last time their account connected, not in compliance V-72245."
+
+    echo
+    ( (grep -E -q "$Regex1" /etc/ssh/sshd_config && sed -ri "$Regex2" /etc/ssh/sshd_config) || (grep -E -q "$Regex3" /etc/ssh/sshd_config && sed -ri "$Regex4" /etc/ssh/sshd_config) ) || echo "PrintLastLog yes" >> /etc/ssh/sshd_config
+    (grep -E -q "$Regex5" /etc/ssh/sshd_config && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+
+#Set to not allow authentication using known host, V-72249
+function V72249 {
+    local Regex1="^(\s*)#IgnoreUserKnownHosts\s+\S+(\s*#.*)?\s*$"
+    local Regex2="s/^(\s*)#IgnoreUserKnownHosts\s+\S+(\s*#.*)?\s*$/\IgnoreUserKnownHosts yes\2/"
+    local Regex3="^(\s*)IgnoreUserKnownHosts\s+\S+(\s*#.*)?\s*$"
+    local Regex4="s/^(\s*)IgnoreUserKnownHosts\s+\S+(\s*#.*)?\s*$/\IgnoreUserKnownHosts yes\2/"
+    local Regex5="^(\s*)IgnoreUserKnownHosts\s*yes?\s*$"
+    local Success="Set SSH to not allow authentication using known host authentication, per V-72249."
+    local Failure="Failed to set SSH to not allow authentication using known host authentication, not in compliance V-72249."
+
+    echo
+    ( (grep -E -q "$Regex1" /etc/ssh/sshd_config && sed -ri "$Regex2" /etc/ssh/sshd_config) || (grep -E -q "$Regex3" /etc/ssh/sshd_config && sed -ri "$Regex4" /etc/ssh/sshd_config) ) || echo "IgnoreUserKnownHosts yes" >> /etc/ssh/sshd_config
+    (grep -E -q "$Regex5" /etc/ssh/sshd_config && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Do not permit GSSAPI auth, V-72259
+function V72259 () {
+    local Regex1="^(\s*)GSSAPIAuthentication\s+\S+(\s*#.*)?\s*$"
+    local Regex2="s/^(\s*)GSSAPIAuthentication\s+\S+(\s*#.*)?\s*$/\GSSAPIAuthentication no\2/"
+    local Regex3="^(\s*)GSSAPIAuthentication\s*no?\s*$"
+    local Success="Set SSH to not allow authentication using GSSAPI authentication, per V-72259."
+    local Failure="Failed to set SSH to not allow authentication using GSSAPI authentication, not in compliance V-72259."
+
+    echo
+    (grep -E -q "$Regex1" /etc/ssh/sshd_config && sed -ri "$Regex2" /etc/ssh/sshd_config) || echo "GSSAPIAuthentication no" >> /etc/ssh/sshd_config
+    (grep -E -q "$Regex3" /etc/ssh/sshd_config && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+
+
+#Set SSH to perform strict mode checking of home dir configuraiton files, V-72263
+function V72263 () {
+    local Regex1="^(\s*)#StrictModes\s+\S+(\s*#.*)?\s*$"
+    local Regex2="s/^(\s*)#StrictModes\s+\S+(\s*#.*)?\s*$/\StrictModes yes\2/"
+    local Regex3="^(\s*)StrictModes\s+\S+(\s*#.*)?\s*$"
+    local Regex4="s/^(\s*)StrictModes\s+\S+(\s*#.*)?\s*$/\StrictModes yes\2/"
+    local Regex5="^(\s*)StrictModes\s*yes?\s*$"
+    local Success="Set SSH to perform strict mode checking of the home directory configuration files, per V-72263."
+    local Failure="Failed to set SSH to perform strict mode checking of the home directory configuration files, not in compliance V-72263."
+
+    echo
+    ( (grep -E -q "$Regex1" /etc/ssh/sshd_config && sed -ri "$Regex2" /etc/ssh/sshd_config) || (grep -E -q "$Regex3" /etc/ssh/sshd_config && sed -ri "$Regex4" /etc/ssh/sshd_config) ) || echo "StrictModes yes" >> /etc/ssh/sshd_config
+    (grep -E -q "$Regex5" /etc/ssh/sshd_config && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set SSH to perform privilege separation, V-72267
+function V72267 () {
+    local Regex1="^(\s*)#Compression\s+\S+(\s*#.*)?\s*$"
+    local Regex2="s/^(\s*)#Compression\s+\S+(\s*#.*)?\s*$/\Compression delayed\2/"
+    local Regex3="^(\s*)Compression\s+\S+(\s*#.*)?\s*$"
+    local Regex4="s/^(\s*)Compression\s+\S+(\s*#.*)?\s*$/\Compression delayed\2/"
+    local Regex5="^(\s*)Compression\s*delayed?\s*$"
+    local Success="Set SSH to only allow compression after successful authentication, per V-72267."
+    local Failure="Failed to set SSH to only allow compression after successful authentication, not in compliance V-72267."
+
+    echo
+    ( (grep -E -q "$Regex1" /etc/ssh/sshd_config && sed -ri "$Regex2" /etc/ssh/sshd_config) || (grep -E -q "$Regex3" /etc/ssh/sshd_config && sed -ri "$Regex4" /etc/ssh/sshd_config) ) || echo "Compression delayed" >> /etc/ssh/sshd_config
+    (grep -E -q "$Regex5" /etc/ssh/sshd_config && echo "$Success") || { echo "$Failure" ; exit 1; }
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use create_module, V-78999
+function V78999 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+arch=b32\s+-S\s+create_module\s+-k\s+module-change\s*(#.*)?$"
+    local Regex2="^\s*-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+create_module\s+-k\s+module-change\s*(#.*)?$"
+    local Success32="Auditing of the successful/unsuccessful access attempts to use create_module on 32bit systems, per V-78999."
+    local Success64="Auditing of the successful/unsuccessful access attempts to use create_module on 64bit systems, per V-78999."
+    local Failure32="Failed to set the auditing of successful/unsuccessful attempts to use create_module on 32bit systems, not in compliance V-78999."
+    local Failure64="Failed to set the auditing of successful/unsuccessful attempts to use create_module on 64bit systems, not in compliance V-78999."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F arch=b32 -S create_module -k module-change" >> /etc/audit/rules.d/audit.rules
+    (uname -p | grep -q 'x86_64' && grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules) || echo "-a always,exit -F arch=b64 -S create_module -k module-change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success32") || { echo "$Failure32" ; exit 1; }
+    echo
+    uname -p | grep -q 'x86_64' && (grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules && echo "$Success64" || { echo "$Failure64" ; exit 1; } )
+}
+
+#Set audit to audit of successful/unsuccessful attempts to use finit_module, V-79001
+function V79001 () {
+    local Regex1="^\s*-a\s+always,exit\s+-F\s+arch=b32\s+-S\s+finit_module\s+-k\s+module-change\s*(#.*)?$"
+    local Regex2="^\s*-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+finit_module\s+-k\s+module-change\s*(#.*)?$"
+    local Success32="Auditing of the successful/unsuccessful access attempts to use finit_module on 32bit systems, per V-79001."
+    local Success64="Auditing of the successful/unsuccessful access attempts to use finit_module on 64bit systems, per V-79001."
+    local Failure32="Failed to set the auditing of successful/unsuccessful attempts to use finit_module on 32bit systems, not in compliance V-79001."
+    local Failure64="Failed to set the auditing of successful/unsuccessful attempts to use finit_module on 64bit systems, not in compliance V-79001."
+
+    echo
+    grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules || echo "-a always,exit -F arch=b32 -S finit_module -k module-change" >> /etc/audit/rules.d/audit.rules
+    (uname -p | grep -q 'x86_64' && grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules) || echo "-a always,exit -F arch=b64 -S finit_module -k module-change" >> /etc/audit/rules.d/audit.rules
+    (grep -E -q "$Regex1" /etc/audit/rules.d/audit.rules && echo "$Success32") || { echo "$Failure32" ; exit 1; }
+    echo
+    uname -p | grep -q 'x86_64' && ( (grep -E -q "$Regex2" /etc/audit/rules.d/audit.rules && echo "$Success64") || { echo "$Failure64" ; exit 1; } )
+}
 
 
 
